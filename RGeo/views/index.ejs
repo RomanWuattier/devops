@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+    <title>RGEO</title>
+
+
+    <link rel="stylesheet" href="/bootstrap/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="/stylesheets/style.css" />
+</head>
+<body>
+<div>
+    <nav class="navbar navbar-inverse">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="#">RGEO</a>
+            </div>
+            <p class="navbar-text">In :</p>
+            <form class="navbar-form pull-left">
+                <select id="yearDown" class="form-control" onchange="onOptionChange()">
+                </select>
+            </form>
+            <p class="navbar-text pull-left">Limit :</p>
+            <form class="navbar-form pull-left" onchange="onOptionChange()">
+                <select id="limitDown" class="form-control">
+                    <option value="5">5</option>
+                    <option value="10" selected="selected">10</option>
+                    <option value="25">25</option>
+                    <option value="50">50</option>
+                    <option value="all">All</option>
+                </select>
+            </form>
+            <p class="navbar-text">Order by country :</p>
+            <button id="inflow" class="btn navbar-btn" onclick="btnAction(this.id)" style= "background-color:MediumSeaGreen">Arrival</button>
+            <button id="outflow" class="btn navbar-btn" onclick="btnAction(this.id)" style="background-color:Gainsboro">Departure</button>
+        </div>
+
+    </nav>
+</div>
+
+<div id="countryDiv" class="col-sm-3">
+    <ul id="countryList" class="list-group">
+        <li class="list-group-item">
+            Empty list
+            <span class="badge">0</span>
+        </li>
+    </ul>
+</div>
+<div id="map" class="col-sm-9">
+</div>
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+<script src="/bootstrap/js/bootstrap.min.js"></script>
+
+<script>
+    var map;
+    var prevInfowindow = false;
+
+    var inflowBtn = document.getElementById('inflow');
+    var outflowBtn = document.getElementById('outflow');
+    var btnId = 'inflowBtn';
+    var yearDown = document.getElementById('yearDown');
+    var limitDown = document.getElementById('limitDown');
+    var countryList = document.getElementById('countryList');
+
+    var flightPaths = [];
+    var lineShapes = [];
+    var markers = [];
+    var currentSelectedShape;
+
+    var c1 = '#ffe7e2';
+    var c2 = '#FEA18D';
+    var c3 = '#FF5632';
+    var c4 = '#c62200';
+    var c5 = '#761501';
+
+    function initMap() {
+        var myOptions = {
+            zoom: 2,
+            center: new google.maps.LatLng(30, 10),
+            mapTypeId: google.maps.MapTypeId.ROADMAP
+        };
+        map = new google.maps.Map(document.getElementById('map'), myOptions);
+
+        var styleArray = [
+            {
+                featureType: "all",
+                elementType: "geometry",
+                stylers: [
+                    { invert_lightness: true },
+                    { hue: "#ffffff" },
+                    { saturation: -100 }
+                ]
+            },
+            {
+                featureType: "water",
+                elementType: "geometry",
+                stylers: [
+                    { invert_lightness: true },
+                    { hue: "#ffffff" },
+                    { saturation: -80 }
+                ]
+            },
+            {
+                featureType: "administrative.country",
+                elementType: "labels",
+                stylers: [
+                    { visibility: "off" }
+                ]
+            },
+            {
+                featureType: "administrative.ocean",
+                elementType: "labels",
+                stylers: [
+                    { visibility: "off" }
+                ]
+            }
+        ];
+        map.setOptions({styles: styleArray});
+
+        getYears();
+
+        getShapes();
+    }
+
+    function getYears() {
+        $.getJSON("http://localhost:3000/years", function(data) {
+            data.forEach(function(item) {
+                var option = document.createElement('option');
+                option.value = item.year;
+                option.innerHTML = item.year;
+                yearDown.appendChild(option);
+            });
+        });
+    }
+
+    function getShapes() {
+        $.getJSON("http://localhost:3000/shapes", function(data) {
+            data.forEach(function(item) {
+                var multiPolygon = JSON.parse(item.geom).coordinates;
+                var coord = []
+                for (var i = 0; i < multiPolygon.length; i++) {
+                    multiPolygon[i][0].forEach(function (pos) {
+                        coord.push({lat: pos[1], lng: pos[0]});
+                    });
+
+                    var shape = drawShape(item, coord, '#cecece', 0.0, 0.0, true);
+                    coord = [];
+
+                    addShapeListener(shape);
+                }
+            });
+        });
+    }
+
+    function drawShape(item, pos, color, strokeOpacity, fillOpacity, isClickable) {
+        var shape = new google.maps.Polygon({
+            paths: pos,
+            strokeColor: color,
+            strokeOpacity: strokeOpacity,
+            strokeWeight: 0,
+            fillColor: color,
+            fillOpacity: fillOpacity,
+            clickable: isClickable
+        });
+        shape.setMap(map);
+
+        shape.objInfo = {
+            'name': item.name_long,
+            'lat': item.lat,
+            'lng': item.lng
+        };
+        return shape;
+    }
+
+    function addShapeListener(shape) {
+        shape.addListener('click', function() {
+            deletePolyline();
+            deleteMarkers();
+            deleteLineShape();
+            clearCountryList();
+            setDefaultCountryListItem();
+
+            this.setOptions({strokeWeight: 2, strokeOpacity: 0.8, fillOpacity: 0.4, strokeColor: '#1835a0'});
+
+            resetSelectedShape();
+            currentSelectedShape = this;
+
+            getCountryByBtnId(this);
+
+        });
+
+        shape.addListener('mouseover', function() {
+            this.setOptions({strokeWeight: 0, strokeOpacity: 0.4, fillOpacity: 0.4, strokeColor: '#cecece'});
+            keepSelectedShape();
+        });
+
+        shape.addListener('mouseout', function() {
+            this.setOptions({strokeWeight: 0, strokeOpacity: 0.0, fillOpacity: 0.0, strokeColor: '#cecece'});
+            keepSelectedShape();
+        });
+    }
+
+    function getCountryByBtnId(shape) {
+        if (btnId == 'inflowBtn') {
+            getCountries(shape, 'B11', shape.objInfo.name,
+                    yearDown.options[yearDown.selectedIndex].value, limitDown.options[limitDown.selectedIndex].value);
+        } else {
+            getCountries(shape, 'B12', shape.objInfo.name,
+                    yearDown.options[yearDown.selectedIndex].value, limitDown.options[limitDown.selectedIndex].value);
+        }
+    }
+
+    function getCountries(shape, variable, country, year, limit) {
+        attachMessage(shape, variable, country, year, limit);
+
+        var url = 'http://localhost:3000/byCountry/' + variable + '/' + country + '/' + year + '/' + limit;
+        $.getJSON(url, function (data) {
+            if (data.length > 0) {
+                clearCountryList();
+                data.forEach(function (item) {
+                    var color = chooseColor(item.nb);
+                    var flightPath = drawLine(shape, item, color);
+                    flightPaths.push(flightPath);
+
+                    var multiPolygon = JSON.parse(item.geom).coordinates;
+                    var coord = []
+                    for (var i = 0; i < multiPolygon.length; i++) {
+                        multiPolygon[i][0].forEach(function (pos) {
+                            coord.push({lat: pos[1], lng: pos[0]});
+                        });
+
+                        var lineShape = drawShape(item, coord, color, 0.8, 0.6, false);
+                        lineShapes.push(lineShape);
+                        attachLineMessage(item);
+                        coord = [];
+                    }
+
+                    fillCountryList(item, color);
+                });
+            }
+        });
+    }
+
+    function drawLine(shape, item, color) {
+        var flightPlanCoordinates = [
+            {lat: shape.objInfo.lat, lng: shape.objInfo.lng},
+            {lat: item.lat, lng: item.lng}
+        ];
+        flightPath = new google.maps.Polyline({
+            path: flightPlanCoordinates,
+            geodesic: true,
+            strokeColor: color,
+            strokeOpacity: 1.0,
+            strokeWeight: 2
+        });
+
+        flightPath.setMap(map);
+        return flightPath;
+    }
+
+    function attachMessage(shape, variable, country, year) {
+        $.getJSON('http://localhost:3000/total/' + variable + '/' + country + '/' + year, function (data) {
+            var marker = new google.maps.Marker({
+                position: new google.maps.LatLng(shape.objInfo.lat, shape.objInfo.lng),
+                map: map,
+                icon: 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png'
+            });
+            markers.push(marker);
+            var infoWindow = new google.maps.InfoWindow();
+            if (data[0]) {
+                infoWindow.setContent(shape.objInfo.name + '</br>' + 'Total: ' + data[0].value);
+            } else {
+                infoWindow.setContent(shape.objInfo.name + '</br>' + 'Total: Unknown');
+            }
+            infoWindowManager(map, infoWindow, marker);
+            marker.addListener('click', function() {
+                infoWindowManager(map, infoWindow, this);
+            });
+        });
+    }
+
+    function attachLineMessage(item) {
+        var marker = new google.maps.Marker({
+            position: new google.maps.LatLng(item.lat, item.lng),
+            map: map,
+            icon: 'http://maps.google.com/mapfiles/ms/icons/red-dot.png',
+            name: item.country_of_birth,
+            value: item.nb
+        });
+        markers.push(marker);
+
+        var infoWindow = new google.maps.InfoWindow();
+        infoWindow.setContent(item.country_of_birth + '</br>' + 'Value: ' + item.nb);
+        marker.addListener('click', function() {
+            infoWindowManager(map, infoWindow, this);
+        });
+    }
+
+    function chooseColor(nb) {
+        if (nb > 20000) {
+            return c5;
+        } else if (nb > 9000) {
+            return c4;
+        } else if (nb > 3500) {
+            return c3;
+        } else if(nb > 1500) {
+            return c2;
+        } else {
+            return c1;
+        }
+    }
+
+    function fillCountryList(item, color) {
+        var li = document.createElement('li');
+        li.id = item.country_of_birth;
+        li.className = 'list-group-item';
+        li.appendChild(document.createTextNode(item.country_of_birth));
+        var span = document.createElement('span');
+        span.className = 'badge';
+        span.textContent = item.nb;
+        span.style.backgroundColor = color;
+        li.appendChild(span);
+        countryList.appendChild(li);
+    }
+
+    function clearCountryList() {
+        while (countryList.firstChild) {
+            countryList.removeChild(countryList.firstChild);
+        }
+    }
+
+    function setDefaultCountryListItem() {
+        var li = document.createElement('li');
+        li.className = 'list-group-item';
+        li.appendChild(document.createTextNode('Empty list'));
+        var span = document.createElement('span');
+        span.className = 'badge';
+        span.textContent = '0';
+        li.appendChild(span);
+        countryList.appendChild(li);
+    }
+
+    function keepSelectedShape() {
+        if (currentSelectedShape != null) {
+            currentSelectedShape.setOptions({strokeWeight: 2, strokeOpacity: 0.8, fillOpacity: 0.4, strokeColor: '#1835a0'});
+        }
+    }
+
+    function resetSelectedShape() {
+        if (currentSelectedShape != null) {
+            currentSelectedShape.setOptions({strokeWeight: 0, strokeOpacity: 0.0, fillOpacity: 0.0, strokeColor: '#cecece'});
+        }
+    }
+
+    function infoWindowManager(map, infoWindow, marker) {
+        if (prevInfowindow) {
+            prevInfowindow.close();
+        }
+        infoWindow.open(map, marker);
+        prevInfowindow = infoWindow;
+    }
+
+    function deletePolyline() {
+        setMapOnAll(null, flightPaths);
+        flightPaths = [];
+    }
+
+    function deleteLineShape() {
+        setMapOnAll(null, lineShapes);
+        lineShapes = [];
+    }
+
+    function deleteMarkers() {
+        setMapOnAll(null, markers);
+        markers = [];
+    }
+
+    function setMapOnAll(map, array) {
+        for (var i = 0; i < array.length; i++) {
+            array[i].setMap(map);
+        }
+    }
+
+    function btnAction(buttonId) {
+        if (currentSelectedShape) {
+            deletePolyline();
+            deleteMarkers();
+            deleteLineShape();
+            clearCountryList();
+            setDefaultCountryListItem();
+
+            if (buttonId == 'inflow') {
+                inflowBtn.style.backgroundColor = 'MediumSeaGreen';
+                outflowBtn.style.backgroundColor = 'Gainsboro';
+                btnId = 'inflowBtn';
+                if (currentSelectedShape != null) {
+                    getCountries(currentSelectedShape, 'B11', currentSelectedShape.objInfo.name,
+                            yearDown.options[yearDown.selectedIndex].value, limitDown.options[limitDown.selectedIndex].value);
+                }
+            } else {
+                outflowBtn.style.backgroundColor = 'MediumSeaGreen';
+                inflowBtn.style.backgroundColor = 'Gainsboro';
+                btnId = 'outflowBtn';
+                if (currentSelectedShape != null) {
+                    getCountries(currentSelectedShape, 'B12', currentSelectedShape.objInfo.name,
+                            yearDown.options[yearDown.selectedIndex].value, limitDown.options[limitDown.selectedIndex].value);
+                }
+            }
+        }
+    }
+
+    function onOptionChange() {
+        if (currentSelectedShape) {
+            deletePolyline();
+            deleteMarkers();
+            deleteLineShape();
+            clearCountryList();
+            setDefaultCountryListItem();
+
+            if (btnId == 'inflowBtn') {
+                getCountries(currentSelectedShape, 'B11', currentSelectedShape.objInfo.name,
+                        yearDown.options[yearDown.selectedIndex].value, limitDown.options[limitDown.selectedIndex].value);
+            } else {
+                getCountries(currentSelectedShape, 'B12', currentSelectedShape.objInfo.name,
+                        yearDown.options[yearDown.selectedIndex].value, limitDown.options[limitDown.selectedIndex].value);
+            }
+        }
+    }
+
+    countryList.onclick = function(event) {
+        var target = event.target;
+        if (target.id) {
+            var marker = markers.find(x => x.name == target.id);
+            var infoWindow = new google.maps.InfoWindow();
+            infoWindow.setContent(marker.name+ '</br>' + 'Value: ' + marker.value);
+            infoWindowManager(map, infoWindow, marker);
+        }
+    };
+
+</script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCAUWD1AB3z7WUKj7pW-V8DaE0RFDup-hg&callback=initMap&signed_in=true" async defer>
+</script>
+
+</body>
+</html>
