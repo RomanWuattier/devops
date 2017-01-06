@@ -21,7 +21,7 @@ module.exports = {
             if (err) {
                 throw err;
             }
-            callback(client.connectionParameters);
+            callback(null, client.connectionParameters);
         });
     },
     getData: function (query, callback) {
@@ -31,11 +31,10 @@ module.exports = {
             }
             client.query(query, function (err, result) {
                 done();
-
                 if (err) {
                     return console.error('error running query', err);
                 }
-                callback(result.rows);
+                callback(null, result.rows);
             });
         });
     }

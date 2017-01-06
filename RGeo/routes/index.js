@@ -19,7 +19,7 @@ router.get('/shapes', function(req, res) {
         'FROM public.ne_10m_admin_0_countries_lakes ' +
         'JOIN country ON (public.ne_10m_admin_0_countries_lakes.name_long = country.name);';
 
-    dbDriver.getData(q, function(item, err) {
+    dbDriver.getData(q, function(err, item) {
         if (item) {
             res.status(200);
             res.send(item);
@@ -49,7 +49,7 @@ router.get('/byCountry/:variable/:country/:year/:limit', function(req, res) {
         q += ';';
     }
 
-    dbDriver.getData(q, function(item, err) {
+    dbDriver.getData(q, function(err, item) {
         if (item) {
             res.status(200);
             res.send(item);
@@ -67,7 +67,7 @@ router.get('/shape/:lat/:lng', function(req, res) {
         'FROM public.ne_10m_admin_0_countries_lakes ' +
         'WHERE ST_Within(' + stMakePoint + ', geom);';
 
-    dbDriver.getData(q, function(item, err) {
+    dbDriver.getData(q, function(err, item) {
         if (item) {
             res.status(200);
             res.send(item);
@@ -79,7 +79,7 @@ router.get('/shape/:lat/:lng', function(req, res) {
 
 router.get('/years', function(req, res) {
     var q = 'SELECT DISTINCT (year) FROM mig ORDER BY year DESC;';
-    dbDriver.getData(q, function(item, err) {
+    dbDriver.getData(q, function(err, item) {
         if (item) {
             res.status(200);
             res.send(item);
@@ -98,7 +98,7 @@ router.get('/total/:variable/:country/:year', function(req, res) {
         'WHERE mig.country = \'' + country + '\' AND co2 = \'TOT\' AND var = \'' + variable + '\' AND year = \'' + year + '\' ' +
         'LIMIT 1;';
 
-    dbDriver.getData(q, function(item, err) {
+    dbDriver.getData(q, function(err, item) {
         if (item) {
             res.status(200);
             res.send(item);
