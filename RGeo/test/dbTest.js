@@ -63,7 +63,43 @@ describe('#Get Data Success', function () {
                 if (err) done(err);
                 assert.equal(result.length, 15);
                 done();
+            });
+        });
+
+    });
+
+    describe('#Get shape from ne_10m_admin_0_countries_lakes', function () {
+        it('should get the France shape', function(done) {
+            var q = 'SELECT gid, name_long, ST_AsGeoJSON(geom) AS geom ' +
+                'FROM public.ne_10m_admin_0_countries_lakes ' +
+                'WHERE ST_Within(ST_MakePoint(2.213749, 46.227638), geom);';
+            dbUtils.getData(q, function (err, result) {
+                if (err) done(err);
+                result[0].should.have.property('geom');
+                done();
             })
         });
     });
+});
+
+describe('#Timeout', function () {
+    describe('#Get data from mig table', function () {
+        this.timeout(500);
+
+        it('get date < 500 ms', function (done) {
+            var q = 'SELECT DISTINCT (year) FROM mig ORDER BY year DESC;';
+            dbUtils.getData(q, function (err, result) {
+                done();
+            });
+        });
+
+        it('get the France shape < 500 ms', function(done) {
+            var q = 'SELECT gid, name_long, ST_AsGeoJSON(geom) AS geom ' +
+                'FROM public.ne_10m_admin_0_countries_lakes ' +
+                'WHERE ST_Within(ST_MakePoint(2.213749, 46.227638), geom);';
+            dbUtils.getData(q, function (err, result) {
+                done();
+            })
+        });
+    })
 });
