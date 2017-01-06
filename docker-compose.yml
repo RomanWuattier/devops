@@ -1,0 +1,19 @@
+db:
+  build: ./db/
+  ports:
+    - "5432:5432"
+  volumes:
+    - ./db/extension.sql:/docker-entrypoint-initdb.d/extension.sql
+    - ./db/country.sql:/docker-entrypoint-initdb.d/country.sql
+    - ./db/mig.sql:/docker-entrypoint-initdb.d/mig.sql
+    - ./db/ne_10m_admin_0_countries_lakes.sql:/docker-entrypoint-initdb.d/ne_10m_admin_0_countries_lakes.sql
+  environment:
+    - POSTGRES_DB=geo
+    - POSTGRES_USER=Roman
+    - POSTGRES_PASSWORD=
+server:
+  build: ./RGeo/
+  ports:
+    - "3000:3000"
+  links:
+    - db
