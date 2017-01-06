@@ -3,8 +3,6 @@
  */
 var pg = require('pg');
 
-function DbDriver() {}
-
 var config = {
     user: 'postgres', //env var: PGUSER
     database: 'geo', //env var: PGDATABASE
@@ -17,20 +15,20 @@ var config = {
 
 var pool = new pg.Pool(config);
 
-DbDriver.prototype.getData = function (query, callback) {
-    pool.connect(function(err, client, done) {
-        if (err) {
-            return console.error('error fetching client from pool', err);
-        }
-        client.query(query, function(err, result) {
-            done();
-
-            if(err) {
-                return console.error('error running query', err);
+module.exports = {
+    getData: function (query, callback) {
+        pool.connect(function (err, client, done) {
+            if (err) {
+                return console.error('error fetching client from pool', err);
             }
-            callback(result.rows);
-        });
-    });
-};
+            client.query(query, function (err, result) {
+                done();
 
-module.exports = DbDriver;
+                if (err) {
+                    return console.error('error running query', err);
+                }
+                callback(result.rows);
+            });
+        });
+    }
+};

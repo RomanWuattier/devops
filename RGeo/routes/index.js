@@ -4,8 +4,7 @@ var path = require('path');
 
 var router = express.Router();
 
-DbDriver = require('../models/db');
-var dbDriver = new DbDriver();
+dbDriver = require('../utils/db');
 
 router.use(express.static(path.join(__dirname, 'public')));
 
