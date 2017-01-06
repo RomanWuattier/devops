@@ -16,6 +16,14 @@ var config = {
 var pool = new pg.Pool(config);
 
 module.exports = {
+    dbConnection: function(callback) {
+        pool.connect(function (err, client) {
+            if (err) {
+                throw err;
+            }
+            callback(client.connectionParameters);
+        });
+    },
     getData: function (query, callback) {
         pool.connect(function (err, client, done) {
             if (err) {
