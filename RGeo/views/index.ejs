@@ -54,6 +54,15 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
 <script src="/bootstrap/js/bootstrap.min.js"></script>
 
+<script src="/gremlins.min.js"></script>
+<script>
+    gremlins.createHorde().before(function waitFiveSeconds(done) {
+        window.setTimeout(done, 6000);
+    }).strategy(gremlins.strategies.distribution()
+        .delay(250)
+    ).unleash();
+</script>
+
 <script>
     var map;
     var prevInfowindow = false;
@@ -89,32 +98,32 @@
                 featureType: "all",
                 elementType: "geometry",
                 stylers: [
-                    { invert_lightness: true },
-                    { hue: "#ffffff" },
-                    { saturation: -100 }
+                    {invert_lightness: true},
+                    {hue: "#ffffff"},
+                    {saturation: -100}
                 ]
             },
             {
                 featureType: "water",
                 elementType: "geometry",
                 stylers: [
-                    { invert_lightness: true },
-                    { hue: "#ffffff" },
-                    { saturation: -80 }
+                    {invert_lightness: true},
+                    {hue: "#ffffff"},
+                    {saturation: -80}
                 ]
             },
             {
                 featureType: "administrative.country",
                 elementType: "labels",
                 stylers: [
-                    { visibility: "off" }
+                    {visibility: "off"}
                 ]
             },
             {
                 featureType: "administrative.ocean",
                 elementType: "labels",
                 stylers: [
-                    { visibility: "off" }
+                    {visibility: "off"}
                 ]
             }
         ];
@@ -137,8 +146,8 @@
     }
 
     function getShapes() {
-        $.getJSON("http://localhost:3000/shapes", function(data) {
-            data.forEach(function(item) {
+        $.getJSON("http://localhost:3000/shapes", function (data) {
+            data.forEach(function (item) {
                 var multiPolygon = JSON.parse(item.geom).coordinates;
                 var coord = []
                 for (var i = 0; i < multiPolygon.length; i++) {
