@@ -103,3 +103,16 @@ describe('#Timeout', function () {
         });
     })
 });
+
+describe('Bad ID', function () {
+    describe('#Get data with bad ID', function () {
+       it ('should return 0 line', function (done) {
+            var q = 'SELECT country, name FROM country WHERE id = 10000';
+            dbUtils.getData(q, function (err, res) {
+                if (err) done(err);
+                res.length.should.be.equal(0);
+                done();
+            });
+       });
+    });
+});
