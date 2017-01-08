@@ -56,9 +56,11 @@
 
 <script src="/gremlins.min.js"></script>
 <script>
+    <% if (conf == 'dev') { %>
     gremlins.createHorde().before(function waitFiveSeconds(done) {
         window.setTimeout(done, 6000);
     }).unleash();
+    <% } %>
 </script>
 
 <script>
