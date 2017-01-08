@@ -58,9 +58,7 @@
 <script>
     gremlins.createHorde().before(function waitFiveSeconds(done) {
         window.setTimeout(done, 6000);
-    }).strategy(gremlins.strategies.distribution()
-        .delay(250)
-    ).unleash();
+    }).unleash();
 </script>
 
 <script>

@@ -2,6 +2,9 @@ var express = require('express');
 var pg = require('pg');
 var path = require('path');
 
+var config = require('config');
+console.log(config.get('config'));
+
 var router = express.Router();
 
 dbDriver = require('../utils/db');
