@@ -14,10 +14,16 @@ dependencies:
 
 test:
   override:
-    - sudo service postgresql stop
-    # wait for postgresql to shutdown
-    - while sudo lsof -Pi :5432 -sTCP:LISTEN -t; do sleep 1; done
-    - docker-compose up -d
+    - sudo apt-get update
+    - sudo apt-get install -y postgis postgresql-9.6-postgis-2.3
+    - createdb geo
+    - createuser Roman
+    - psql geo < db/extension.sql
+    - psql geo < db/country.sql
+    - psql geo < db/mig.sql
+    - psql geo < db/ne_10m_admin_0_countries_lakes.sql
+    - cd RGeo && npm install
+    - mocha RGeo/test
 
 deployment:
   hub:

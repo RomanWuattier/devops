@@ -65,6 +65,9 @@ make_task_def() {
 		"db"
 	    ],
 	    "image": "wuattiroro/devops_server",
+	    "environment": [
+	        { "name" : "NODE_ENV", "value" : "prod" }
+	    ],
 	    "portMappings": [
 		{
 		    "containerPort": 80,
