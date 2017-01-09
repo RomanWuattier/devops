@@ -18,6 +18,8 @@ test:
     # wait for postgresql to shutdown
     - while sudo lsof -Pi :5432 -sTCP:LISTEN -t; do sleep 1; done
     - docker-compose up -d
+    - while ! (sudo lsof -Pi :5432 -sTCP:LISTEN); do sleep 1; done
+    - mocha
 
 deployment:
   hub:

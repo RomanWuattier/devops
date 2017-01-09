@@ -22,7 +22,7 @@ describe('#Check dbDriver', function() {
         it('should connect to right database with right user', function (done) {
             dbUtils.dbConnection(function (err, result) {
                 if (err) done(err);
-                result.should.have.property('user', 'postgres');
+                result.should.have.property('user', 'Roman');
                 result.should.have.property('database', 'geo');
                 done();
             });
