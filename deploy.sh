@@ -67,13 +67,32 @@ make_task_def() {
 	    "image": "wuattiroro/devops_server",
 	    "portMappings": [
 		{
-		    "containerPort": 3000,
-		    "hostPort": 3000
+		    "containerPort": 80,
+		    "hostPort": 80
 		}
 	    ],
 	    "cpu": 10,
 	    "memory": 200,
 	    "essential": true
+	},
+	{
+	    "name": "server_test",
+	    "environment": [
+	        { "name" : "NODE_ENV", "value" : "dev" }
+	    ],
+	    "links": [
+		"db"
+	    ],
+	    "image": "maximeflips/devops_server",
+	    "portMappings": [
+		{
+		    "containerPort": 80,
+		    "hostPort": 3000
+		}
+	    ],
+	    "cpu": 10,
+	    "memory": 200,
+	    "essential": true,
 	}
     ]'
 

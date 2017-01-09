@@ -17,7 +17,7 @@ RUN npm install
 COPY . /usr/src/app
 
 # Expose the port 3000 which is used by the container.
-EXPOSE 3000
+EXPOSE 80
 
 # Specify the command to execute to start the container.
 ENTRYPOINT [ "npm", "start" ]
