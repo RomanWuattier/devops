@@ -2,7 +2,7 @@
   "config": "prod",
   "configPath": "/prod",
   "dbConfig": {
-    "user": "postgres",
+    "user": "Roman",
     "database": "geo",
     "password": "",
     "host": "localhost",
