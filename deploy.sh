@@ -74,25 +74,6 @@ make_task_def() {
 	    "cpu": 10,
 	    "memory": 200,
 	    "essential": true
-	},
-	{
-	    "name": "server_test",
-	    "environment": [
-	        { "name" : "TEST", "value" : "1" }
-	    ],
-	    "links": [
-		"db"
-	    ],
-	    "image": "wuattiroro/devops_server",
-	    "portMappings": [
-		{
-		    "containerPort": 80,
-		    "hostPort": 3000
-		}
-	    ],
-	    "cpu": 10,
-	    "memory": 200,
-	    "essential": true,
 	}
     ]'
 
