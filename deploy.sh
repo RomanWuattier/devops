@@ -78,7 +78,7 @@ make_task_def() {
 	{
 	    "name": "server_test",
 	    "environment": [
-	        { "name" : "NODE_ENV", "value" : "dev" }
+	        { "name" : "TEST", "value" : "1" }
 	    ],
 	    "links": [
 		"db"
