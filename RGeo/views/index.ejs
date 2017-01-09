@@ -135,7 +135,7 @@
     }
 
     function getYears() {
-        $.getJSON("http://ec2-52-210-153-171.eu-west-1.compute.amazonaws.com:3000/years", function(data) {
+        $.getJSON("/years", function(data) {
             data.forEach(function(item) {
                 var option = document.createElement('option');
                 option.value = item.year;
@@ -146,7 +146,7 @@
     }
 
     function getShapes() {
-        $.getJSON("http://ec2-52-210-153-171.eu-west-1.compute.amazonaws.com:3000/shapes", function (data) {
+        $.getJSON("/shapes", function (data) {
             data.forEach(function (item) {
                 var multiPolygon = JSON.parse(item.geom).coordinates;
                 var coord = []
@@ -225,7 +225,7 @@
     function getCountries(shape, variable, country, year, limit) {
         attachMessage(shape, variable, country, year, limit);
 
-        var url = 'http://ec2-52-210-153-171.eu-west-1.compute.amazonaws.com:3000/byCountry/' + variable + '/' + country + '/' + year + '/' + limit;
+        var url = '/byCountry/' + variable + '/' + country + '/' + year + '/' + limit;
         $.getJSON(url, function (data) {
             if (data.length > 0) {
                 clearCountryList();
@@ -271,7 +271,7 @@
     }
 
     function attachMessage(shape, variable, country, year) {
-        $.getJSON('http://ec2-52-210-153-171.eu-west-1.compute.amazonaws.com:3000/total/' + variable + '/' + country + '/' + year, function (data) {
+        $.getJSON('total/' + variable + '/' + country + '/' + year, function (data) {
             var marker = new google.maps.Marker({
                 position: new google.maps.LatLng(shape.objInfo.lat, shape.objInfo.lng),
                 map: map,
