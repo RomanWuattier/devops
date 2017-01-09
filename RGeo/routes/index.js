@@ -12,7 +12,6 @@ router.use(express.static(path.join(__dirname, 'public')));
 /* GET home page. */
 router.get('/', function(req, res, next) {
     var test = config.get('config');
-    console.log(test);
     res.render('index', { conf: test });
 });
 
