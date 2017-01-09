@@ -83,7 +83,7 @@ make_task_def() {
 	    "links": [
 		"db"
 	    ],
-	    "image": "maximeflips/devops_server",
+	    "image": "wuattiroro/devops_server",
 	    "portMappings": [
 		{
 		    "containerPort": 80,
