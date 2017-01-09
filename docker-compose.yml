@@ -2,7 +2,7 @@ version: '2'
 services:
   db:
     build: ./db/
-    image: maximeflips/devops_db
+    image: wuattiroro/devops_db
     ports:
       - "5432:5432"
     environment:
@@ -11,7 +11,7 @@ services:
       - POSTGRES_PASSWORD=
   server:
     build: ./RGeo/
-    image: maximeflips/devops_server
+    image: wuattiroro/devops_server
     ports:
       - "3000:3000"
     links:
