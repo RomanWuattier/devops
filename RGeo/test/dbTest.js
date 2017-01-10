@@ -6,9 +6,6 @@ var should = require('should');
 
 var dbUtils = require('../utils/db');
 
-var config = require('config');
-console.log(config);
-
 describe('#Check dbDriver', function() {
 
     describe('#Check database connection', function() {

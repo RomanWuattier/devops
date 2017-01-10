@@ -27,7 +27,6 @@ module.exports = {
     },
     getData: function (query, callback) {
         pool.connect(function (err, client, done) {
-            console.log(configJson);
             if (err) {
                 return console.error('error fetching client from pool', err);
             }
