@@ -57,7 +57,7 @@ make_task_def() {
 	    ],
 	    "essential": true,
 	    "memory": 200,
-	    "cpu": 10
+	    "cpu": 128
 	},
 	{
 	    "name": "server",
@@ -74,7 +74,7 @@ make_task_def() {
 		    "hostPort": 80
 		}
 	    ],
-	    "cpu": 10,
+	    "cpu": 128,
 	    "memory": 200,
 	    "essential": true
 	},
@@ -93,7 +93,7 @@ make_task_def() {
 		    "hostPort": 3000
 		}
 	    ],
-	    "cpu": 10,
+	    "cpu": 128,
 	    "memory": 200,
 	    "essential": true
 	}
